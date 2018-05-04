@@ -6,23 +6,25 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.0-alpha13'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
     }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'android-maven'
 repositories {
     google()
     jcenter()
 }
+
+group = 'com.github.econnelly'
 
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -57,9 +59,9 @@ android {
 dependencies {
 //	compile fileTree(dir: 'libs', include: '*.jar')
 
-	implementation 'com.android.support:support-v4:27.1.1'
-	implementation 'com.android.support:appcompat-v7:27.1.1'
-	implementation 'com.android.support:support-core-utils:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-core-utils:27.1.1'
     implementation 'com.android.support:support-annotations:27.1.1'
 }
 
@@ -70,7 +72,7 @@ task sourcesJar(type: Jar) {
 }
 
 task javadoc(type: Javadoc) {
-    failOnError  false
+    failOnError false
     source = android.sourceSets.main.java.sourceFiles
     classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     classpath += configurations.compile
