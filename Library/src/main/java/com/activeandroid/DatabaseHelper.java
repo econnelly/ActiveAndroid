@@ -18,10 +18,8 @@ package com.activeandroid;
 
 import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.arch.persistence.db.SupportSQLiteOpenHelper;
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.arch.persistence.db.framework.FrameworkSQLiteOpenHelperFactory;
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.activeandroid.util.IOUtils;

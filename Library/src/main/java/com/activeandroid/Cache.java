@@ -16,15 +16,15 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import java.util.Collection;
-
 import android.arch.persistence.db.SupportSQLiteDatabase;
+import android.arch.persistence.db.SupportSQLiteOpenHelper;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.util.LruCache;
 
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
+
+import java.util.Collection;
 
 public final class Cache {
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -155,5 +155,9 @@ public final class Cache {
 
 	public static synchronized String getTableName(Class<? extends Model> type) {
 		return sModelInfo.getTableInfo(type).getTableName();
+	}
+
+	public static SupportSQLiteOpenHelper getSQLiteOpenHelper() {
+		return sDatabaseHelper;
 	}
 }
