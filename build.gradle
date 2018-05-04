@@ -27,17 +27,6 @@ android {
         versionName "1.0"
     }
 
-    flavorDimensions "default"
-    productFlavors{
-        free {
-            dimension "default"
-        }
-
-        paid {
-            dimension "default"
-        }
-    }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -70,4 +59,5 @@ dependencies {
 	implementation 'com.android.support:support-v4:27.1.1'
 	implementation 'com.android.support:appcompat-v7:27.1.1'
 	implementation 'com.android.support:support-core-utils:27.1.1'
+    implementation 'com.android.support:support-annotations:27.1.1'
 }
