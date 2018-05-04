@@ -16,8 +16,8 @@ package com.activeandroid;
  * limitations under the License.
  */
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 
 import com.activeandroid.util.Log;
 
@@ -56,7 +56,7 @@ public final class ActiveAndroid {
 		Log.setEnabled(enabled);
 	}
 
-	public static SQLiteDatabase getDatabase() {
+	public static SupportSQLiteDatabase getDatabase() {
 		return Cache.openDatabase();
 	}
 

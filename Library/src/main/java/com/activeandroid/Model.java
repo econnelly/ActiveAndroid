@@ -16,6 +16,7 @@ package com.activeandroid;
  * limitations under the License.
  */
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -72,7 +73,7 @@ public abstract class Model {
 	}
 
 	public final Long save() {
-		final SQLiteDatabase db = Cache.openDatabase();
+		final SupportSQLiteDatabase db = Cache.openDatabase();
 		final ContentValues values = new ContentValues();
 
 		for (Field field : mTableInfo.getFields()) {
@@ -152,10 +153,10 @@ public abstract class Model {
 		}
 
 		if (mId == null) {
-			mId = db.insert(mTableInfo.getTableName(), null, values);
+			mId = db.insert(mTableInfo.getTableName(), SQLiteDatabase.CONFLICT_REPLACE, values);
 		}
 		else {
-			db.update(mTableInfo.getTableName(), values, idName+"=" + mId, null);
+			db.update(mTableInfo.getTableName(), SQLiteDatabase.CONFLICT_REPLACE, values, idName+"=" + mId, null);
 		}
 
 		Cache.getContext().getContentResolver()

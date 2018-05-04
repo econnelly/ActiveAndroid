@@ -18,6 +18,7 @@ package com.activeandroid;
 
 import java.util.Collection;
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.util.LruCache;
@@ -102,7 +103,7 @@ public final class Cache {
 		return sIsInitialized;
 	}
 
-	public static synchronized SQLiteDatabase openDatabase() {
+	public static synchronized SupportSQLiteDatabase openDatabase() {
 		return sDatabaseHelper.getWritableDatabase();
 	}
 

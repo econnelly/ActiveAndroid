@@ -103,7 +103,7 @@ public final class SQLiteUtils {
 	}
 
 	public static <T extends Model> List<T> rawQuery(Class<? extends Model> type, String sql, String[] selectionArgs) {
-		Cursor cursor = Cache.openDatabase().rawQuery(sql, selectionArgs);
+		Cursor cursor = Cache.openDatabase().query(sql, selectionArgs);
 		List<T> entities = processCursor(type, cursor);
 		cursor.close();
 
@@ -111,7 +111,7 @@ public final class SQLiteUtils {
 	}
 	  
 	public static int intQuery(final String sql, final String[] selectionArgs) {
-        final Cursor cursor = Cache.openDatabase().rawQuery(sql, selectionArgs);
+        final Cursor cursor = Cache.openDatabase().query(sql, selectionArgs);
         final int number = processIntCursor(cursor);
         cursor.close();
 

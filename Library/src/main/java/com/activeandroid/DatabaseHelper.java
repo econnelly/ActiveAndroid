@@ -16,6 +16,20 @@ package com.activeandroid;
  * limitations under the License.
  */
 
+import android.arch.persistence.db.SupportSQLiteDatabase;
+import android.arch.persistence.db.SupportSQLiteOpenHelper;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.arch.persistence.db.framework.FrameworkSQLiteOpenHelperFactory;
+import android.text.TextUtils;
+
+import com.activeandroid.util.IOUtils;
+import com.activeandroid.util.Log;
+import com.activeandroid.util.NaturalOrderComparator;
+import com.activeandroid.util.SQLiteUtils;
+import com.activeandroid.util.SqlParser;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,18 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
-
-import com.activeandroid.util.IOUtils;
-import com.activeandroid.util.Log;
-import com.activeandroid.util.NaturalOrderComparator;
-import com.activeandroid.util.SQLiteUtils;
-import com.activeandroid.util.SqlParser;
-
-public final class DatabaseHelper extends SQLiteOpenHelper {
+public final class DatabaseHelper implements SupportSQLiteOpenHelper {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// PUBLIC CONSTANTS
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -50,36 +53,57 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
     //////////////////////////////////////////////////////////////////////////////////////
 
     private final String mSqlParser;
+    private final SupportSQLiteOpenHelper helper;
 
-	//////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 	// CONSTRUCTORS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public DatabaseHelper(Configuration configuration) {
-		super(configuration.getContext(), configuration.getDatabaseName(), null, configuration.getDatabaseVersion());
+	public DatabaseHelper(com.activeandroid.Configuration configuration) {
+		super();
 		copyAttachedDatabase(configuration.getContext(), configuration.getDatabaseName());
 		mSqlParser = configuration.getSqlParser();
+
+        Factory factory = new FrameworkSQLiteOpenHelperFactory();
+        Configuration config = Configuration.builder(configuration.getContext())
+                .name("todo.db")
+                .callback(new Callback(configuration.getDatabaseVersion()) {
+                    @Override
+                    public void onCreate(SupportSQLiteDatabase db) {
+                        DatabaseHelper.this.onCreate(db);
+                    }
+
+                    @Override
+                    public void onUpgrade(SupportSQLiteDatabase db, int oldVersion, int newVersion) {
+                        DatabaseHelper.this.onUpgrade(db, oldVersion, newVersion);
+                    }
+
+                    @Override
+                    public void onOpen(SupportSQLiteDatabase db) {
+                        DatabaseHelper.this.onOpen(db);
+                    }
+                })
+                .build();
+
+        helper = factory.create(config);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////
 	// OVERRIDEN METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	@Override
-	public void onOpen(SQLiteDatabase db) {
+	public void onOpen(SupportSQLiteDatabase db) {
 		executePragmas(db);
-	};
+	}
 
-	@Override
-	public void onCreate(SQLiteDatabase db) {
+	public void onCreate(SupportSQLiteDatabase db) {
 		executePragmas(db);
 		executeCreate(db);
 		executeMigrations(db, -1, db.getVersion());
 		executeCreateIndex(db);
 	}
 
-	@Override
-	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+	public void onUpgrade(SupportSQLiteDatabase db, int oldVersion, int newVersion) {
 		executePragmas(db);
 		executeCreate(db);
 		executeMigrations(db, oldVersion, newVersion);
@@ -125,14 +149,14 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 	// PRIVATE METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	private void executePragmas(SQLiteDatabase db) {
+	private void executePragmas(SupportSQLiteDatabase db) {
 		if (SQLiteUtils.FOREIGN_KEYS_SUPPORTED) {
 			db.execSQL("PRAGMA foreign_keys=ON;");
 			Log.i("Foreign Keys supported. Enabling foreign key features.");
 		}
 	}
 
-	private void executeCreateIndex(SQLiteDatabase db) {
+	private void executeCreateIndex(SupportSQLiteDatabase db) {
 		db.beginTransaction();
 		try {
 			for (TableInfo tableInfo : Cache.getTableInfos()) {
@@ -149,7 +173,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	private void executeCreate(SQLiteDatabase db) {
+	private void executeCreate(SupportSQLiteDatabase db) {
 		db.beginTransaction();
 		try {
 			for (TableInfo tableInfo : Cache.getTableInfos()) {
@@ -162,7 +186,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	private boolean executeMigrations(SQLiteDatabase db, int oldVersion, int newVersion) {
+	private boolean executeMigrations(SupportSQLiteDatabase db, int oldVersion, int newVersion) {
 		boolean migrationExecuted = false;
 		try {
 			final List<String> files = Arrays.asList(Cache.getContext().getAssets().list(MIGRATION_PATH));
@@ -198,14 +222,14 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		return migrationExecuted;
 	}
 
-	private void executeSqlScript(SQLiteDatabase db, String file) {
+	private void executeSqlScript(SupportSQLiteDatabase db, String file) {
 
 	    InputStream stream = null;
 
 		try {
 		    stream = Cache.getContext().getAssets().open(MIGRATION_PATH + "/" + file);
 
-		    if (Configuration.SQL_PARSER_DELIMITED.equalsIgnoreCase(mSqlParser)) {
+		    if (com.activeandroid.Configuration.SQL_PARSER_DELIMITED.equalsIgnoreCase(mSqlParser)) {
 		        executeDelimitedSqlScript(db, stream);
 
 		    } else {
@@ -222,7 +246,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		}
 	}
 
-	private void executeDelimitedSqlScript(SQLiteDatabase db, InputStream stream) throws IOException {
+	private void executeDelimitedSqlScript(SupportSQLiteDatabase db, InputStream stream) throws IOException {
 
 	    List<String> commands = SqlParser.parse(stream);
 
@@ -231,7 +255,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 	    }
 	}
 
-	private void executeLegacySqlScript(SQLiteDatabase db, InputStream stream) throws IOException {
+	private void executeLegacySqlScript(SupportSQLiteDatabase db, InputStream stream) throws IOException {
 
 	    InputStreamReader reader = null;
         BufferedReader buffer = null;
@@ -254,4 +278,29 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 
         }
 	}
+
+    @Override
+    public String getDatabaseName() {
+        return helper.getDatabaseName();
+    }
+
+    @Override
+    public void setWriteAheadLoggingEnabled(boolean enabled) {
+        helper.setWriteAheadLoggingEnabled(enabled);
+    }
+
+    @Override
+    public SupportSQLiteDatabase getWritableDatabase() {
+        return helper.getWritableDatabase();
+    }
+
+    @Override
+    public SupportSQLiteDatabase getReadableDatabase() {
+        return helper.getReadableDatabase();
+    }
+
+    @Override
+    public void close() {
+        helper.close();
+    }
 }

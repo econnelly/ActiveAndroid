@@ -3,10 +3,14 @@ package com.activeandroid.content;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.arch.persistence.db.SupportSQLiteQuery;
+import android.arch.persistence.db.SupportSQLiteQueryBuilder;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.util.SparseArray;
 
 import com.activeandroid.ActiveAndroid;
@@ -93,7 +97,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	@Override
 	public Uri insert(Uri uri, ContentValues values) {
 		final Class<? extends Model> type = getModelType(uri);
-		final Long id = Cache.openDatabase().insert(Cache.getTableName(type), null, values);
+		final Long id = Cache.openDatabase().insert(Cache.getTableName(type), SQLiteDatabase.CONFLICT_NONE, values);
 
 		if (id != null && id > 0) {
 			Uri retUri = createUri(type, id);
@@ -108,7 +112,7 @@ public class ContentProvider extends android.content.ContentProvider {
 	@Override
 	public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
 		final Class<? extends Model> type = getModelType(uri);
-		final int count = Cache.openDatabase().update(Cache.getTableName(type), values, selection, selectionArgs);
+		final int count = Cache.openDatabase().update(Cache.getTableName(type), SQLiteDatabase.CONFLICT_NONE, values, selection, selectionArgs);
 
 		notifyChange(uri);
 
@@ -126,17 +130,16 @@ public class ContentProvider extends android.content.ContentProvider {
 	}
 
 	@Override
-	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+	public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 		final Class<? extends Model> type = getModelType(uri);
-		final Cursor cursor = Cache.openDatabase().query(
-				Cache.getTableName(type),
-				projection,
-				selection,
-				selectionArgs,
-				null,
-				null,
-				sortOrder);
+		final SupportSQLiteQuery query = SupportSQLiteQueryBuilder
+				.builder(Cache.getTableName(type))
+				.columns(projection)
+				.orderBy(sortOrder)
+				.selection(selection, selectionArgs)
+				.create();
 
+		final Cursor cursor = Cache.openDatabase().query(query);
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 
 		return cursor;
