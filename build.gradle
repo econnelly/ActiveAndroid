@@ -1,17 +1,73 @@
-apply plugin: 'java'
-apply from: 'gradle-mvn-push.gradle'
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
 
-targetCompatibility = '1.6'
-sourceCompatibility = '1.6'
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.2.0-alpha13'
+    }
+}
 
-sourceSets {
-	main {
-		java {
-			srcDir 'src'
-		}
-	}
+apply plugin: 'com.android.library'
+
+repositories {
+    google()
+    jcenter()
+}
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+    }
+
+    flavorDimensions "default"
+    productFlavors{
+        free {
+            dimension "default"
+        }
+
+        paid {
+            dimension "default"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'NOTICE.txt'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-	compile fileTree(dir: 'libs', include: '*.jar')
+//	compile fileTree(dir: 'libs', include: '*.jar')
+
+	implementation 'com.android.support:support-v4:27.1.1'
+	implementation 'com.android.support:appcompat-v7:27.1.1'
+	implementation 'com.android.support:support-core-utils:27.1.1'
 }
