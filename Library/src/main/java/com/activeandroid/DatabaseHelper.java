@@ -64,7 +64,7 @@ public final class DatabaseHelper implements SupportSQLiteOpenHelper {
 
         Factory factory = new FrameworkSQLiteOpenHelperFactory();
         Configuration config = Configuration.builder(configuration.getContext())
-                .name("todo.db")
+                .name(configuration.getDatabaseName())
                 .callback(new Callback(configuration.getDatabaseVersion()) {
                     @Override
                     public void onCreate(SupportSQLiteDatabase db) {
